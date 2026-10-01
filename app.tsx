@@ -1882,3 +1882,534 @@ function LocalDetailPage({
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <button onClick={onBack} className="flex items-center gap-2 text-[#8A7468] hover:text-[#1C1410] mb-6">
+          ← Regresar a Locales
+        </button>
+
+        <div className="grid lg:grid-cols-2 gap-10">
+          <div>
+            <div className="rounded-2xl overflow-hidden bg-[#E8DDD2] h-80 mb-3">
+              <ImageWithFallback
+                src={allImages[activeImage]}
+                alt={`Local ${local.code}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {allImages.length > 1 && (
+              <div className="flex gap-2">
+                {allImages.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    className={`w-20 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                      i === activeImage ? "border-[#C1440E]" : "border-transparent"
+                    }`}
+                  >
+                    <ImageWithFallback src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="bg-white rounded-2xl border border-[#E0D5CC] p-5 mt-5">
+              <h3 className="font-bold text-[#1C1410] mb-4">Información Comercial</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "ID Local", value: local.code },
+                  { label: "Superficie", value: `${local.area} m²` },
+                  { label: "Dimensiones", value: local.dimensions },
+                  { label: "Nivel", value: local.floor },
+                  { label: "Zona", value: local.zone },
+                  { label: "Estado", value: local.status === "disponible" ? "✅ Disponible" : "🔶 En Negociación" },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <p className="text-xs text-[#8A7468] mb-0.5">{item.label}</p>
+                    <p className="text-sm font-semibold text-[#1C1410]">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <p className="text-xs text-[#8A7468] mb-2">Características</p>
+                <div className="flex flex-wrap gap-2">
+                  {local.features.map((f) => (
+                    <span key={f} className="text-xs bg-[#F2ECE5] text-[#7A5C4E] px-3 py-1 rounded-full">
+                      ✓ {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-[#C1440E]/5 border border-[#C1440E]/20 rounded-xl">
+                <p className="text-xs text-[#8A7468] mb-1">Precio estimado</p>
+                <p className="font-bold text-[#C1440E] text-lg">{local.price}</p>
+                <p className="text-xs text-[#8A7468] italic">*Datos de demostración</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <StatusBadge status={local.status} />
+              <span className="text-[#8A7468] text-sm">Local {local.code}</span>
+            </div>
+            <h1
+              className="text-3xl text-[#1C1410] mb-3"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Local Comercial {local.area} m²
+            </h1>
+            <p className="text-[#8A7468] leading-relaxed mb-6">{local.description}</p>
+
+            {formSent ? (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center animate-fade-in">
+                <p className="text-4xl mb-3">✅</p>
+                <h3 className="font-bold text-green-700 text-xl mb-2">¡Solicitud enviada!</h3>
+                <p className="text-green-600 text-sm">
+                  Nuestro equipo comercial se pondrá en contacto contigo en un plazo de 24–48 horas hábiles.
+                </p>
+                <p className="text-green-500 text-xs mt-3 italic">*Datos de demostración — No se enviará ningún correo real.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#E0D5CC] p-6">
+                <h3
+                  className="text-xl text-[#1C1410] mb-5"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Solicitar Información
+                </h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: "nombre", label: "Nombre completo", type: "text", required: true },
+                      { key: "empresa", label: "Empresa / Marca", type: "text", required: false },
+                      { key: "telefono", label: "Teléfono", type: "tel", required: true },
+                      { key: "correo", label: "Correo electrónico", type: "email", required: true },
+                    ].map((field) => (
+                      <div key={field.key} className={field.key === "nombre" || field.key === "correo" ? "col-span-2 sm:col-span-1" : ""}>
+                        <label className="text-xs text-[#8A7468] font-medium mb-1 block">
+                          {field.label} {field.required && <span className="text-[#C1440E]">*</span>}
+                        </label>
+                        <input
+                          type={field.type}
+                          required={field.required}
+                          value={(form as Record<string, string>)[field.key]}
+                          onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-[#E0D5CC] text-sm text-[#1C1410] focus:outline-none focus:border-[#C1440E] bg-white"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#8A7468] font-medium mb-1 block">
+                      Giro de negocio <span className="text-[#C1440E]">*</span>
+                    </label>
+                    <select
+                      required
+                      value={form.negocio}
+                      onChange={(e) => setForm({ ...form, negocio: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E0D5CC] text-sm text-[#1C1410] focus:outline-none focus:border-[#C1440E] bg-white"
+                    >
+                      <option value="">Selecciona una opción</option>
+                      {["Moda y Ropa", "Restaurante/Cafetería", "Tecnología", "Belleza y Estética", "Servicios", "Hogar", "Supermercado", "Otro"].map((o) => (
+                        <option key={o} value={o}>{o}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#8A7468] font-medium mb-1 block">Mensaje</label>
+                    <textarea
+                      rows={3}
+                      value={form.mensaje}
+                      onChange={(e) => setForm({ ...form, mensaje: e.target.value })}
+                      placeholder="Cuéntanos más sobre tu proyecto..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E0D5CC] text-sm text-[#1C1410] focus:outline-none focus:border-[#C1440E] resize-none bg-white"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-[#C1440E] text-white font-bold py-4 rounded-xl hover:bg-[#9E3509] transition-colors"
+                  >
+                    Enviar Solicitud
+                  </button>
+                  <p className="text-xs text-center text-[#8A7468] italic">
+                    *Prototipo de demostración — no se enviarán datos reales.
+                  </p>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Restaurants Page ─────────────────────────────────────────────────────────
+
+function RestaurantsPage() {
+  const [filter, setFilter] = useState<"all" | "$" | "$$" | "$$$">("all");
+  const filtered = restaurants.filter(
+    (r) => filter === "all" || r.priceRange === filter
+  );
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div
+        className="relative h-56 overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #1C1410 60%, #C1440E)",
+        }}
+      >
+        <ImageWithFallback
+          src="https://images.unsplash.com/photo-1700625916627-16ad4fb0553c?w=1200&h=400&fit=crop&auto=format"
+          alt="Restaurantes"
+          className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-40"
+        />
+        <div className="relative max-w-7xl mx-auto px-4 h-full flex items-center">
+          <div>
+            <h1
+              className="text-4xl md:text-5xl text-white mb-2"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Restaurantes
+            </h1>
+            <p className="text-white/70">Sabores del mundo en un solo lugar</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex gap-2 mb-8">
+          {(["all", "$", "$$", "$$$"] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setFilter(p)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                filter === p
+                  ? "bg-[#C1440E] text-white border-[#C1440E]"
+                  : "bg-white text-[#3D2B22] border-[#E0D5CC] hover:border-[#C1440E]/50"
+              }`}
+            >
+              {p === "all" ? "Todos" : p === "$" ? "$ Económico" : p === "$$" ? "$$ Medio" : "$$$ Premium"}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((r) => (
+            <div
+              key={r.id}
+              className="bg-white rounded-2xl overflow-hidden border border-[#E0D5CC] hover-lift"
+            >
+              <div className="relative h-52 bg-[#E8DDD2] overflow-hidden">
+                <ImageWithFallback
+                  src={r.image}
+                  alt={r.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-3 right-3 bg-white rounded-full px-3 py-1 text-sm font-bold text-[#C1440E]">
+                  {r.priceRange}
+                </div>
+                {r.featured && (
+                  <div className="absolute top-3 left-3 bg-[#E3A139] text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                    ⭐ Destacado
+                  </div>
+                )}
+              </div>
+              <div className="p-5">
+                <div className="mb-3">
+                  <h3 className="font-bold text-[#1C1410] text-lg">{r.name}</h3>
+                  <p className="text-[#C1440E] text-xs font-medium">{r.subcategory}</p>
+                </div>
+                <p className="text-[#8A7468] text-sm mb-4 line-clamp-2">{r.description}</p>
+                <div className="space-y-1 text-xs text-[#8A7468]">
+                  <p>📍 {r.local} · {r.floor}</p>
+                  <p>🕐 {r.hours}</p>
+                  <p>📞 {r.phone}</p>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {r.tags.map((t) => (
+                    <span key={t} className="text-xs bg-[#F2ECE5] text-[#7A5C4E] px-2 py-0.5 rounded-full">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Services Page ────────────────────────────────────────────────────────────
+
+function ServicesPage() {
+  const subcategories = [...new Set(services.map((s) => s.subcategory))];
+  const [filter, setFilter] = useState("all");
+
+  const filtered =
+    filter === "all" ? services : services.filter((s) => s.subcategory === filter);
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="bg-white border-b border-[#E0D5CC]">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <h1
+            className="text-4xl text-[#1C1410] mb-2"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Servicios
+          </h1>
+          <p className="text-[#8A7468]">Todo lo que necesitas en un solo lugar</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-wrap gap-2 mb-8">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+              filter === "all"
+                ? "bg-[#C1440E] text-white border-[#C1440E]"
+                : "bg-white text-[#3D2B22] border-[#E0D5CC]"
+            }`}
+          >
+            Todos
+          </button>
+          {subcategories.map((sub) => (
+            <button
+              key={sub}
+              onClick={() => setFilter(sub)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                filter === sub
+                  ? "bg-[#C1440E] text-white border-[#C1440E]"
+                  : "bg-white text-[#3D2B22] border-[#E0D5CC] hover:border-[#C1440E]/50"
+              }`}
+            >
+              {sub}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {filtered.map((s) => (
+            <div
+              key={s.id}
+              className="bg-white rounded-2xl overflow-hidden border border-[#E0D5CC] hover-lift"
+            >
+              <div className="h-40 bg-[#E8DDD2] overflow-hidden">
+                <ImageWithFallback
+                  src={s.image}
+                  alt={s.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <p className="text-[#C1440E] text-xs font-semibold mb-1">{s.subcategory}</p>
+                <h3 className="font-bold text-[#1C1410] mb-2">{s.name}</h3>
+                <p className="text-[#8A7468] text-xs mb-3 line-clamp-2">{s.description}</p>
+                <div className="space-y-0.5 text-xs text-[#8A7468]">
+                  <p>📍 {s.local} · {s.floor}</p>
+                  <p>🕐 {s.hours}</p>
+                  <p>📞 {s.phone}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Directory Page ───────────────────────────────────────────────────────────
+
+function DirectoryPage({
+  onSelectStore,
+}: {
+  onSelectStore: (id: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [cat, setCat] = useState<Category | "all">("all");
+
+  const allItems = [
+    ...stores.map((s) => ({ ...s, type: "Tienda" as const })),
+    ...restaurants.map((r) => ({
+      id: r.id,
+      name: r.name,
+      category: "restaurantes" as Category,
+      local: r.local,
+      floor: r.floor,
+      hours: r.hours,
+      phone: r.phone,
+      type: "Restaurante" as const,
+      description: r.description,
+    })),
+    ...services.map((s) => ({
+      id: s.id,
+      name: s.name,
+      category: "servicios" as Category,
+      local: s.local,
+      floor: s.floor,
+      hours: s.hours,
+      phone: s.phone,
+      type: "Servicio" as const,
+      description: s.description,
+    })),
+  ];
+
+  const filtered = allItems.filter((item) => {
+    const matchSearch =
+      !search ||
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.local.toLowerCase().includes(search.toLowerCase());
+    const matchCat = cat === "all" || item.category === cat;
+    return matchSearch && matchCat;
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  const grouped: Record<string, typeof filtered> = {};
+  filtered.forEach((item) => {
+    const key = item.name[0].toUpperCase();
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(item);
+  });
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="bg-white border-b border-[#E0D5CC]">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <h1
+            className="text-4xl text-[#1C1410] mb-2"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Directorio
+          </h1>
+          <p className="text-[#8A7468]">Directorio completo de establecimientos de Parque Tezontle</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex-1">
+            <SearchBar value={search} onChange={setSearch} placeholder="Buscar establecimiento..." />
+          </div>
+          <select
+            value={cat}
+            onChange={(e) => setCat(e.target.value as typeof cat)}
+            className="px-4 py-3.5 rounded-2xl border border-[#E0D5CC] text-sm text-[#3D2B22] bg-white focus:outline-none focus:border-[#C1440E] min-w-[200px]"
+          >
+            <option value="all">Todas las categorías</option>
+            {(Object.keys(categoryLabels) as Category[]).map((c) => (
+              <option key={c} value={c}>{categoryLabels[c]}</option>
+            ))}
+          </select>
+        </div>
+
+        <p className="text-[#8A7468] text-sm mb-6">{filtered.length} establecimientos</p>
+
+        {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([letter, items]) => (
+          <div key={letter} className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-[#C1440E] rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">{letter}</span>
+              </div>
+              <div className="flex-1 h-px bg-[#E0D5CC]" />
+            </div>
+            <div className="space-y-2">
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => item.type === "Tienda" && onSelectStore(item.id)}
+                  className={`w-full text-left bg-white rounded-xl border border-[#E0D5CC] p-4 hover:border-[#C1440E]/40 transition-colors flex items-center gap-4 ${item.type !== "Tienda" ? "cursor-default" : "hover:shadow-sm"}`}
+                >
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: categoryColors[item.category] + "18" }}>
+                    <span className="text-lg">{categoryIcons[item.category]}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-[#1C1410]">{item.name}</p>
+                      <span className="text-xs bg-[#F2ECE5] text-[#7A5C4E] px-2 py-0.5 rounded-full shrink-0">
+                        {item.type}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8A7468] truncate">{item.description}</p>
+                  </div>
+                  <div className="text-right shrink-0 hidden sm:block">
+                    <p className="text-xs text-[#8A7468]">📍 {item.local}</p>
+                    <p className="text-xs text-[#8A7468]">{item.floor}</p>
+                  </div>
+                  <div className="text-right shrink-0 hidden md:block">
+                    <p className="text-xs text-[#8A7468]">{item.hours}</p>
+                    <p className="text-xs text-[#8A7468]">{item.phone}</p>
+                  </div>
+                  {item.type === "Tienda" && (
+                    <svg className="text-[#C1440E] shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Contact Page ─────────────────────────────────────────────────────────────
+
+function ContactPage() {
+  const [form, setForm] = useState({ nombre: "", correo: "", asunto: "", mensaje: "" });
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSent(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="bg-white border-b border-[#E0D5CC]">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <h1
+            className="text-4xl text-[#1C1410] mb-2"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Contacto
+          </h1>
+          <p className="text-[#8A7468]">Estamos aquí para ayudarte</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-2 gap-12">
+          <div>
+            <h2
+              className="text-2xl text-[#1C1410] mb-6"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Información de Contacto
+            </h2>
+            <div className="space-y-5 mb-8">
+              {[
+                {
+                  icon: "📍",
+                  title: "Dirección",
+                  lines: [
+                    "Calz. de la Viga s/n esq. Av. Javier Rojo Gómez",
+                    "Col. Agrícola Pantitlán, Iztapalapa",
+                    "CDMX C.P. 08100",
+                    "*(Datos de demostración)",
+                  ],
+                },
+                {
+                  icon: "🕐",
+                  title: "Horarios de Atención",
+                  lines: ["Lunes a Domingo: 10:00 – 21:00", "Walmart: 07:00 – 22:00", "Cinépolis: 10:00 – 23:30"],
+                },
+                {
+                  icon: "📞",
+                  title: "Teléfonos",
