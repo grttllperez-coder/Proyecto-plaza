@@ -1038,3 +1038,397 @@ function StoresPage({
                   cat === c
                     ? "text-white border-transparent"
 
+  : "bg-white text-[#3D2B22] border-[#E0D5CC] hover:border-opacity-50"
+                }`}
+                style={
+                  cat === c
+                    ? { backgroundColor: categoryColors[c], borderColor: categoryColors[c] }
+                    : {}
+                }
+              >
+                {categoryIcons[c]} {categoryLabels[c]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[#8A7468] text-sm mb-6">{filtered.length} tiendas encontradas</p>
+
+        {filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-5xl mb-4">🔍</p>
+            <p className="text-[#8A7468] text-lg">No encontramos tiendas con ese criterio</p>
+            <button
+              onClick={() => { setSearch(""); setCat("all"); setFloor("all"); }}
+              className="mt-4 text-[#C1440E] font-medium hover:underline"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filtered.map((store) => (
+              <button
+                key={store.id}
+                onClick={() => onSelectStore(store.id)}
+                className="text-left bg-white rounded-2xl overflow-hidden border border-[#E0D5CC] hover-lift group"
+              >
+                <div className="h-44 bg-[#E8DDD2] overflow-hidden">
+                  <ImageWithFallback
+                    src={store.image}
+                    alt={store.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-1">
+                    <h3 className="font-bold text-[#1C1410]">{store.name}</h3>
+                    <Badge category={store.category} small />
+                  </div>
+                  <p className="text-[#8A7468] text-xs mb-3 line-clamp-2">{store.description}</p>
+                  <div className="flex items-center justify-between text-xs text-[#8A7468]">
+                    <span>📍 {store.local}</span>
+                    <span className="bg-[#F2ECE5] px-2 py-0.5 rounded-full">{store.floor}</span>
+                  </div>
+                  <p className="text-xs text-[#8A7468] mt-1">🕐 {store.hours}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Store Detail ─────────────────────────────────────────────────────────────
+
+function StoreDetailPage({
+  store,
+  onBack,
+  navigateToMap,
+  onSelectPromotion,
+}: {
+  store: Store;
+  onBack: () => void;
+  navigateToMap: () => void;
+  onSelectPromotion: (id: string) => void;
+}) {
+  const [activeImage, setActiveImage] = useState(0);
+  const allImages = [store.image, ...store.gallery];
+  const storePromos = promotions.filter((p) => p.storeId === store.id);
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-[#8A7468] hover:text-[#1C1410] mb-6 transition-colors"
+        >
+          ← Regresar
+        </button>
+
+        <div className="grid lg:grid-cols-2 gap-10">
+          <div>
+            <div className="rounded-2xl overflow-hidden bg-[#E8DDD2] h-80 mb-3">
+              <ImageWithFallback
+                src={allImages[activeImage]}
+                alt={store.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {allImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {allImages.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    className={`w-20 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                      i === activeImage ? "border-[#C1440E]" : "border-transparent"
+                    }`}
+                  >
+                    <ImageWithFallback
+                      src={img}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Badge category={store.category} />
+            <h1
+              className="text-4xl text-[#1C1410] mt-3 mb-4"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              {store.name}
+            </h1>
+            <p className="text-[#8A7468] text-base leading-relaxed mb-6">{store.description}</p>
+
+            <div className="space-y-4 bg-white rounded-2xl p-5 border border-[#E0D5CC]">
+              {[
+                { icon: "📍", label: "Ubicación", value: `${store.local} · ${store.floor}` },
+                { icon: "🕐", label: "Horario", value: store.hours },
+                { icon: "📞", label: "Teléfono", value: store.phone },
+                ...(store.website
+                  ? [{ icon: "🌐", label: "Web", value: store.website }]
+                  : []),
+              ].map((item) => (
+                <div key={item.label} className="flex items-start gap-3">
+                  <span className="text-lg">{item.icon}</span>
+                  <div>
+                    <p className="text-xs text-[#8A7468] font-medium">{item.label}</p>
+                    <p className="text-sm text-[#1C1410]">{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              {store.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs bg-[#F2ECE5] text-[#7A5C4E] px-3 py-1 rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={navigateToMap}
+                className="flex-1 bg-[#C1440E] text-white font-semibold py-3.5 rounded-xl hover:bg-[#9E3509] transition-colors"
+              >
+                Ver en el Mapa
+              </button>
+              <a
+                href={`tel:${store.phone}`}
+                className="flex-1 border-2 border-[#C1440E] text-[#C1440E] font-semibold py-3.5 rounded-xl text-center hover:bg-[#C1440E]/5 transition-colors"
+              >
+                Llamar
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {storePromos.length > 0 && (
+          <div className="mt-14">
+            <SectionTitle title="Promociones de esta Tienda" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {storePromos.map((promo) => (
+                <button
+                  key={promo.id}
+                  onClick={() => onSelectPromotion(promo.id)}
+                  className="text-left bg-white rounded-2xl overflow-hidden border border-[#E0D5CC] hover-lift"
+                >
+                  <div className="relative h-36 bg-[#E8DDD2] overflow-hidden">
+                    <ImageWithFallback src={promo.image} alt={promo.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 left-2">
+                      <DiscountBadge text={promo.discount} />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-[#1C1410] text-sm mb-1">{promo.title}</h3>
+                    <p className="text-[#8A7468] text-xs">Hasta: {promo.validUntil}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Promotions Page ──────────────────────────────────────────────────────────
+
+function PromotionsPage({
+  onSelectPromotion,
+}: {
+  onSelectPromotion: (id: string) => void;
+}) {
+  const [cat, setCat] = useState<Category | "all">("all");
+  const [storeFilter, setStoreFilter] = useState("all");
+
+  const storeNames = [...new Set(promotions.map((p) => p.storeName))];
+  const allCategories: Category[] = [
+    "moda", "tecnologia", "entretenimiento", "belleza", "supermercado",
+  ];
+
+  const filtered = promotions.filter((p) => {
+    const matchCat = cat === "all" || p.category === cat;
+    const matchStore = storeFilter === "all" || p.storeName === storeFilter;
+    return matchCat && matchStore;
+  });
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="bg-white border-b border-[#E0D5CC]">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <h1
+            className="text-4xl text-[#1C1410] mb-2"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Promociones
+          </h1>
+          <p className="text-[#8A7468]">Ofertas y descuentos exclusivos en Parque Tezontle</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-2xl border border-[#E0D5CC] p-5 mb-8 flex flex-wrap gap-4">
+          <select
+            value={cat}
+            onChange={(e) => setCat(e.target.value as typeof cat)}
+            className="px-4 py-3 rounded-xl border border-[#E0D5CC] text-sm text-[#3D2B22] bg-white focus:outline-none focus:border-[#C1440E]"
+          >
+            <option value="all">Todas las categorías</option>
+            {allCategories.map((c) => (
+              <option key={c} value={c}>
+                {categoryLabels[c]}
+              </option>
+            ))}
+          </select>
+          <select
+            value={storeFilter}
+            onChange={(e) => setStoreFilter(e.target.value)}
+            className="px-4 py-3 rounded-xl border border-[#E0D5CC] text-sm text-[#3D2B22] bg-white focus:outline-none focus:border-[#C1440E]"
+          >
+            <option value="all">Todas las tiendas</option>
+            {storeNames.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filtered.map((promo) => (
+            <button
+              key={promo.id}
+              onClick={() => onSelectPromotion(promo.id)}
+              className="text-left bg-white rounded-2xl overflow-hidden border border-[#E0D5CC] hover-lift group"
+            >
+              <div className="relative h-52 bg-[#E8DDD2] overflow-hidden">
+                <ImageWithFallback
+                  src={promo.image}
+                  alt={promo.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1410]/50 to-transparent" />
+                <div className="absolute top-3 left-3">
+                  <DiscountBadge text={promo.discount} />
+                </div>
+                <div className="absolute bottom-3 left-3">
+                  <Badge category={promo.category} small />
+                </div>
+              </div>
+              <div className="p-4">
+                <p className="text-[#8A7468] text-xs font-medium mb-1">{promo.storeName}</p>
+                <h3 className="font-bold text-[#1C1410] text-sm mb-2 line-clamp-2">{promo.title}</h3>
+                <p className="text-[#8A7468] text-xs mb-3 line-clamp-2">{promo.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#C1440E] font-medium">
+                    Vigente: {promo.validUntil}
+                  </span>
+                  <span className="text-xs text-[#8A7468] hover:text-[#C1440E]">Ver →</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Promotion Detail ─────────────────────────────────────────────────────────
+
+function PromotionDetailPage({
+  promo,
+  onBack,
+  onSelectStore,
+}: {
+  promo: Promotion;
+  onBack: () => void;
+  onSelectStore: (id: string) => void;
+}) {
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <button onClick={onBack} className="flex items-center gap-2 text-[#8A7468] hover:text-[#1C1410] mb-6">
+          ← Regresar a Promociones
+        </button>
+        <div className="bg-white rounded-3xl overflow-hidden border border-[#E0D5CC]">
+          <div className="relative h-72 bg-[#E8DDD2]">
+            <ImageWithFallback src={promo.image} alt={promo.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1410]/60 to-transparent" />
+            <div className="absolute top-5 left-5">
+              <DiscountBadge text={promo.discount} />
+            </div>
+          </div>
+          <div className="p-8">
+            <Badge category={promo.category} />
+            <h1
+              className="text-3xl text-[#1C1410] mt-3 mb-2"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              {promo.title}
+            </h1>
+            <p className="text-[#8A7468] text-base leading-relaxed mb-6">{promo.description}</p>
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              <div className="bg-[#F2ECE5] rounded-xl p-4">
+                <p className="text-xs text-[#8A7468] mb-1">Tienda</p>
+                <p className="font-bold text-[#1C1410]">{promo.storeName}</p>
+              </div>
+              <div className="bg-[#F2ECE5] rounded-xl p-4">
+                <p className="text-xs text-[#8A7468] mb-1">Vigencia</p>
+                <p className="font-bold text-[#1C1410]">Hasta el {promo.validUntil}</p>
+              </div>
+            </div>
+            <div className="border-t border-[#E0D5CC] pt-5 mb-6">
+              <p className="text-xs font-semibold text-[#8A7468] mb-2 uppercase tracking-wide">Términos y Condiciones</p>
+              <p className="text-sm text-[#8A7468]">{promo.terms}</p>
+            </div>
+            <button
+              onClick={() => onSelectStore(promo.storeId)}
+              className="w-full bg-[#C1440E] text-white font-semibold py-4 rounded-xl hover:bg-[#9E3509] transition-colors"
+            >
+              Ver Tienda: {promo.storeName}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Mall Map ─────────────────────────────────────────────────────────────────
+
+function MallMapPage({
+  onSelectStore,
+}: {
+  onSelectStore: (id: string) => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterCat, setFilterCat] = useState<Category | "all">("all");
+  const [activeFloor, setActiveFloor] = useState<"baja" | "alta">("baja");
+
+  const floorBajaStores = stores.filter((s) => s.floor === "Planta Baja");
+  const floorAltaStores = stores.filter((s) => s.floor === "Planta Alta");
+  const currentFloorStores = activeFloor === "baja" ? floorBajaStores : floorAltaStores;
+
+  const displayStores = currentFloorStores.filter((s) => {
+    const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase());
+    const matchCat = filterCat === "all" || s.category === filterCat;
+    return matchSearch && matchCat;
+  });
+
+  const selectedStore = selectedId ? stores.find((s) => s.id === selectedId) : null;
