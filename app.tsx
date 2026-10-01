@@ -2413,3 +2413,212 @@ function ContactPage() {
                 {
                   icon: "📞",
                   title: "Teléfonos",
+lines: ["Información general: 55 5600 0000", "Arrendamiento: 55 5600 0100", "*(Datos de demostración)"],
+                },
+                {
+                  icon: "✉️",
+                  title: "Correos Electrónicos",
+                  lines: ["info@parquetezontle.mx", "arrendamiento@parquetezontle.mx", "*(Datos de demostración)"],
+                },
+              ].map((item) => (
+                <div key={item.title} className="flex gap-4 p-5 bg-white rounded-2xl border border-[#E0D5CC]">
+                  <span className="text-2xl">{item.icon}</span>
+                  <div>
+                    <p className="font-bold text-[#1C1410] mb-1">{item.title}</p>
+                    {item.lines.map((line, i) => (
+                      <p key={i} className={`text-sm ${line.startsWith("*") ? "text-[#8A7468] italic text-xs" : "text-[#8A7468]"}`}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-[#F2ECE5] rounded-2xl p-5">
+              <h3 className="font-bold text-[#1C1410] mb-3">Redes Sociales</h3>
+              <div className="flex gap-3">
+                {["Facebook", "Instagram", "Twitter", "YouTube"].map((s) => (
+                  <button
+                    key={s}
+                    className="flex-1 bg-white text-[#3D2B22] text-xs font-semibold py-2.5 rounded-xl border border-[#E0D5CC] hover:border-[#C1440E]/40 transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2
+              className="text-2xl text-[#1C1410] mb-6"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Envíanos un Mensaje
+            </h2>
+
+            {sent ? (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-10 text-center animate-fade-in">
+                <p className="text-5xl mb-4">✅</p>
+                <h3 className="font-bold text-green-700 text-xl mb-2">¡Mensaje enviado!</h3>
+                <p className="text-green-600 text-sm">Nos pondremos en contacto contigo muy pronto.</p>
+                <p className="text-green-500 text-xs mt-3 italic">*Datos de demostración</p>
+                <button
+                  onClick={() => { setSent(false); setForm({ nombre: "", correo: "", asunto: "", mensaje: "" }); }}
+                  className="mt-5 text-[#C1440E] font-medium hover:underline text-sm"
+                >
+                  Enviar otro mensaje
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E0D5CC] p-6 space-y-4">
+                {[
+                  { key: "nombre", label: "Nombre completo", type: "text", required: true },
+                  { key: "correo", label: "Correo electrónico", type: "email", required: true },
+                  { key: "asunto", label: "Asunto", type: "text", required: true },
+                ].map((field) => (
+                  <div key={field.key}>
+                    <label className="text-xs text-[#8A7468] font-medium mb-1 block">
+                      {field.label} <span className="text-[#C1440E]">*</span>
+                    </label>
+                    <input
+                      type={field.type}
+                      required={field.required}
+                      value={(form as Record<string, string>)[field.key]}
+                      onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-[#E0D5CC] text-sm text-[#1C1410] focus:outline-none focus:border-[#C1440E] bg-white"
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-xs text-[#8A7468] font-medium mb-1 block">
+                    Mensaje <span className="text-[#C1440E]">*</span>
+                  </label>
+                  <textarea
+                    rows={5}
+                    required
+                    value={form.mensaje}
+                    onChange={(e) => setForm({ ...form, mensaje: e.target.value })}
+                    placeholder="Escribe tu mensaje aquí..."
+                    className="w-full px-4 py-3 rounded-xl border border-[#E0D5CC] text-sm text-[#1C1410] focus:outline-none focus:border-[#C1440E] resize-none bg-white"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-[#C1440E] text-white font-bold py-4 rounded-xl hover:bg-[#9E3509] transition-colors"
+                >
+                  Enviar Mensaje
+                </button>
+                <p className="text-xs text-center text-[#8A7468] italic">
+                  *Datos de demostración — no se enviarán mensajes reales.
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [page, setPage] = useState<Page>("home");
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [selectedPromoId, setSelectedPromoId] = useState<string | null>(null);
+  const [selectedLocalId, setSelectedLocalId] = useState<string | null>(null);
+  const [prevPage, setPrevPage] = useState<Page>("home");
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const navigate = (p: Page) => {
+    setPrevPage(page);
+    setPage(p);
+    contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0 });
+  };
+
+  const selectStore = (id: string) => {
+    setSelectedStoreId(id);
+    navigate("store-detail");
+  };
+
+  const selectPromotion = (id: string) => {
+    setSelectedPromoId(id);
+    navigate("promotion-detail");
+  };
+
+  const selectLocal = (id: string) => {
+    setSelectedLocalId(id);
+    navigate("local-detail");
+  };
+
+  const selectedStore = selectedStoreId ? stores.find((s) => s.id === selectedStoreId) : null;
+  const selectedPromo = selectedPromoId ? promotions.find((p) => p.id === selectedPromoId) : null;
+  const selectedLocal = selectedLocalId ? localSpaces.find((l) => l.id === selectedLocalId) : null;
+
+  const renderPage = () => {
+    switch (page) {
+      case "home":
+        return (
+          <HomePage
+            navigate={navigate}
+            onSelectStore={selectStore}
+            onSelectPromotion={selectPromotion}
+          />
+        );
+      case "stores":
+        return <StoresPage onSelectStore={selectStore} />;
+      case "store-detail":
+        return selectedStore ? (
+          <StoreDetailPage
+            store={selectedStore}
+            onBack={() => navigate(prevPage === "store-detail" ? "stores" : prevPage)}
+            navigateToMap={() => navigate("map")}
+            onSelectPromotion={selectPromotion}
+          />
+        ) : null;
+      case "map":
+        return <MallMapPage onSelectStore={selectStore} />;
+      case "promotions":
+        return <PromotionsPage onSelectPromotion={selectPromotion} />;
+      case "promotion-detail":
+        return selectedPromo ? (
+          <PromotionDetailPage
+            promo={selectedPromo}
+            onBack={() => navigate("promotions")}
+            onSelectStore={selectStore}
+          />
+        ) : null;
+      case "locales":
+        return <LocalesPage onSelectLocal={selectLocal} />;
+      case "local-detail":
+        return selectedLocal ? (
+          <LocalDetailPage
+            local={selectedLocal}
+            onBack={() => navigate("locales")}
+          />
+        ) : null;
+      case "restaurants":
+        return <RestaurantsPage />;
+      case "services":
+        return <ServicesPage />;
+      case "directory":
+        return <DirectoryPage onSelectStore={selectStore} />;
+      case "contact":
+        return <ContactPage />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <Header currentPage={page} navigate={navigate} />
+      <main className="animate-fade-in" key={page}>
+        {renderPage()}
+      </main>
+    </div>
+  );
+}
