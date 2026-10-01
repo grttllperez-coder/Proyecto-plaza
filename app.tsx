@@ -1432,3 +1432,453 @@ function MallMapPage({
   });
 
   const selectedStore = selectedId ? stores.find((s) => s.id === selectedId) : null;
+      </div>
+    </div>
+  );
+}
+
+// ─── Mall Map ─────────────────────────────────────────────────────────────────
+
+function MallMapPage({
+  onSelectStore,
+}: {
+  onSelectStore: (id: string) => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterCat, setFilterCat] = useState<Category | "all">("all");
+  const [activeFloor, setActiveFloor] = useState<"baja" | "alta">("baja");
+
+  const floorBajaStores = stores.filter((s) => s.floor === "Planta Baja");
+  const floorAltaStores = stores.filter((s) => s.floor === "Planta Alta");
+  const currentFloorStores = activeFloor === "baja" ? floorBajaStores : floorAltaStores;
+
+  const displayStores = currentFloorStores.filter((s) => {
+    const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase());
+    const matchCat = filterCat === "all" || s.category === filterCat;
+    return matchSearch && matchCat;
+  });
+
+  const selectedStore = selectedId ? stores.find((s) => s.id === selectedId) : null;
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id === selectedId ? null : id);
+  };
+
+  // Map zones for Planta Baja
+  const bajazones = [
+    // North row
+    { id: "samsung", x: 120, y: 60, w: 110, h: 70, label: "Samsung Store" },
+    { id: "liverpool", x: 260, y: 60, w: 110, h: 70, label: "Liverpool" },
+    { id: "walmart", x: 400, y: 60, w: 110, h: 70, label: "Walmart" },
+    { id: "sears", x: 540, y: 60, w: 110, h: 70, label: "Sears" },
+    // West col
+    { id: "mac", x: 40, y: 180, w: 60, h: 90, label: "MAC" },
+    // East col
+    { id: "pullbear", x: 700, y: 180, w: 60, h: 90, label: "Pull&Bear" },
+    // South row food court area
+    { id: "zara", x: 120, y: 370, w: 110, h: 60, label: "Zara" },
+    { id: "hm", x: 260, y: 370, w: 110, h: 60, label: "H&M" },
+    { id: "nike", x: 400, y: 370, w: 110, h: 60, label: "Nike" },
+    { id: "cinepolis", x: 540, y: 370, w: 110, h: 60, label: "Cinépolis" },
+  ];
+
+  const altaZones = [
+    { id: "zara", x: 120, y: 60, w: 110, h: 70, label: "Zara" },
+    { id: "hm", x: 260, y: 60, w: 110, h: 70, label: "H&M" },
+    { id: "pullbear", x: 400, y: 60, w: 110, h: 70, label: "Pull&Bear" },
+    { id: "nike", x: 540, y: 60, w: 110, h: 70, label: "Nike" },
+    { id: "cinepolis", x: 120, y: 370, w: 240, h: 60, label: "Cinépolis VIP" },
+    { id: "mac", x: 400, y: 370, w: 110, h: 60, label: "MAC Cosmetics" },
+    { id: "samsung", x: 540, y: 370, w: 110, h: 60, label: "Samsung" },
+  ];
+
+  const zones = activeFloor === "baja" ? bajazones : altaZones;
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="bg-white border-b border-[#E0D5CC]">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <h1
+            className="text-4xl text-[#1C1410] mb-2"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Mapa de Parque Tezontle
+          </h1>
+          <p className="text-[#8A7468]">Encuentra la ubicación de cada tienda en el mall</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-4">
+            <SearchBar value={search} onChange={setSearch} placeholder="Buscar local..." />
+            <select
+              value={filterCat}
+              onChange={(e) => setFilterCat(e.target.value as typeof filterCat)}
+              className="w-full px-4 py-3 rounded-xl border border-[#E0D5CC] text-sm text-[#3D2B22] bg-white focus:outline-none focus:border-[#C1440E]"
+            >
+              <option value="all">Todas las categorías</option>
+              {(["moda", "tecnologia", "entretenimiento", "belleza", "supermercado", "hogar"] as Category[]).map((c) => (
+                <option key={c} value={c}>{categoryLabels[c]}</option>
+              ))}
+            </select>
+
+            <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+              {displayStores.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => handleSelect(s.id)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 ${
+                    selectedId === s.id
+                      ? "bg-[#C1440E] text-white"
+                      : "hover:bg-[#F2ECE5] text-[#3D2B22]"
+                  }`}
+                >
+                  <span>{categoryIcons[s.category]}</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold truncate">{s.name}</p>
+                    <p className={`text-xs truncate ${selectedId === s.id ? "text-white/70" : "text-[#8A7468]"}`}>
+                      {s.local}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {selectedStore && (
+              <div className="bg-white border border-[#E0D5CC] rounded-2xl p-4 animate-fade-in">
+                <Badge category={selectedStore.category} small />
+                <h3 className="font-bold text-[#1C1410] mt-2 mb-1">{selectedStore.name}</h3>
+                <p className="text-xs text-[#8A7468] mb-1">📍 {selectedStore.local}</p>
+                <p className="text-xs text-[#8A7468] mb-3">🕐 {selectedStore.hours}</p>
+                <button
+                  onClick={() => onSelectStore(selectedStore.id)}
+                  className="w-full bg-[#C1440E] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-[#9E3509] transition-colors"
+                >
+                  Ver Detalles
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Map */}
+          <div className="lg:col-span-3">
+            {/* Floor selector */}
+            <div className="flex gap-2 mb-4">
+              {(["baja", "alta"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => { setActiveFloor(f); setSelectedId(null); }}
+                  className={`px-5 py-2 rounded-xl text-sm font-semibold transition-colors border ${
+                    activeFloor === f
+                      ? "bg-[#C1440E] text-white border-[#C1440E]"
+                      : "bg-white text-[#3D2B22] border-[#E0D5CC] hover:border-[#C1440E]/50"
+                  }`}
+                >
+                  {f === "baja" ? "Planta Baja" : "Planta Alta"}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-[#E0D5CC] overflow-hidden">
+              <svg
+                viewBox="0 0 800 480"
+                className="w-full"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
+                {/* Background */}
+                <rect x="0" y="0" width="800" height="480" fill="#F5F0EB" />
+-
+                {/* Mall outer boundary */}
+                <rect x="30" y="30" width="740" height="420" rx="12" fill="#EDE5DC" stroke="#C8B4A6" strokeWidth="2" />
+
+                {/* Corridors */}
+                <rect x="100" y="150" width="600" height="30" fill="#DDD3C8" rx="4" />
+                <rect x="100" y="300" width="600" height="30" fill="#DDD3C8" rx="4" />
+                <rect x="100" y="150" width="30" height="180" fill="#DDD3C8" rx="4" />
+                <rect x="670" y="150" width="30" height="180" fill="#DDD3C8" rx="4" />
+
+                {/* Central atrium */}
+                <rect x="250" y="195" width="300" height="90" rx="8" fill="#E8E0D8" stroke="#C8B4A6" strokeWidth="1.5" strokeDasharray="4,2" />
+                <text x="400" y="232" textAnchor="middle" fill="#8A7468" fontSize="11" fontWeight="600">ATRIO CENTRAL</text>
+                <text x="400" y="248" textAnchor="middle" fill="#8A7468" fontSize="9">Área de descanso y exhibiciones</text>
+
+                {/* Entrances */}
+                {[
+                  { x: 370, y: 30, w: 60, label: "ENTRADA NORTE" },
+                  { x: 370, y: 422, w: 60, label: "ENTRADA SUR" },
+                  { x: 30, y: 215, w: 0, label: "ENTRADA\nOESTE", rot: true },
+                  { x: 740, y: 215, w: 0, label: "ENTRADA\nESTE", rot: true },
+                ].map((e, i) => (
+                  <g key={i}>
+                    {i < 2 ? (
+                      <>
+                        <rect x={e.x} y={e.y} width={60} height={20} rx="4" fill="#C1440E" />
+                        <text x={e.x + 30} y={e.y + 14} textAnchor="middle" fill="white" fontSize="7" fontWeight="700">
+                          {e.label}
+                        </text>
+                      </>
+                    ) : (
+                      <>
+                        <rect
+                          x={i === 2 ? 30 : 740}
+                          y={215}
+                          width={20}
+                          height={50}
+                          rx="4"
+                          fill="#C1440E"
+                        />
+                        <text
+                          x={i === 2 ? 40 : 750}
+                          y={235}
+                          textAnchor="middle"
+                          fill="white"
+                          fontSize="6"
+                          fontWeight="700"
+                          transform={`rotate(-90, ${i === 2 ? 40 : 750}, 240)`}
+                        >
+                          {e.label?.replace("\n", " ")}
+                        </text>
+                      </>
+                    )}
+                  </g>
+                ))}
+
+                {/* Store zones */}
+                {zones.map((zone) => {
+                  const store = stores.find((s) => s.id === zone.id);
+                  const isSelected = selectedId === zone.id;
+                  const isHighlighted =
+                    displayStores.some((s) => s.id === zone.id) &&
+                    (filterCat !== "all" || search);
+                  const isFiltered =
+                    filterCat !== "all" || search
+                      ? !displayStores.some((s) => s.id === zone.id)
+                      : false;
+                  const color = store ? categoryColors[store.category] : "#8A7468";
+
+                  return (
+                    <g key={zone.id} onClick={() => handleSelect(zone.id)} className="map-store cursor-pointer" style={{ cursor: "pointer" }}>
+                      <rect
+                        x={zone.x}
+                        y={zone.y}
+                        width={zone.w}
+                        height={zone.h}
+                        rx="6"
+                        fill={isSelected ? color : color + "25"}
+                        stroke={isSelected ? color : color + "80"}
+                        strokeWidth={isSelected ? 2.5 : 1.5}
+                        opacity={isFiltered ? 0.3 : 1}
+                      />
+                      {isSelected && (
+                        <rect
+                          x={zone.x - 3}
+                          y={zone.y - 3}
+                          width={zone.w + 6}
+                          height={zone.h + 6}
+                          rx="8"
+                          fill="none"
+                          stroke={color}
+                          strokeWidth="2"
+                          opacity="0.4"
+                          strokeDasharray="4,2"
+                        />
+                      )}
+                      <text
+                        x={zone.x + zone.w / 2}
+                        y={zone.y + zone.h / 2 - 4}
+                        textAnchor="middle"
+                        fill={isSelected ? "white" : color}
+                        fontSize="9"
+                        fontWeight="700"
+                      >
+                        {zone.label.length > 12 ? zone.label.slice(0, 12) + "…" : zone.label}
+                      </text>
+                      {store && (
+                        <text
+                          x={zone.x + zone.w / 2}
+                          y={zone.y + zone.h / 2 + 9}
+                          textAnchor="middle"
+                          fill={isSelected ? "white" : "#8A7468"}
+                          fontSize="7"
+                        >
+                          {store.local}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+
+                {/* Legend */}
+                <g transform="translate(30, 435)">
+                  <text x="0" y="10" fill="#8A7468" fontSize="8" fontWeight="600">
+                    LEYENDA:
+                  </text>
+                  {(["moda", "tecnologia", "entretenimiento", "belleza"] as Category[]).map(
+                    (c, i) => (
+                      <g key={c} transform={`translate(${60 + i * 120}, 0)`}>
+                        <rect x="0" y="0" width="10" height="10" rx="2" fill={categoryColors[c]} />
+                        <text x="13" y="9" fill="#8A7468" fontSize="8">
+                          {categoryLabels[c]}
+                        </text>
+                      </g>
+                    )
+                  )}
+                </g>
+              </svg>
+            </div>
+
+            <p className="text-xs text-[#8A7468] text-center mt-3 italic">
+              * Mapa conceptual representativo. Datos de demostración.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Locales Page ─────────────────────────────────────────────────────────────
+
+function LocalesPage({
+  onSelectLocal,
+}: {
+  onSelectLocal: (id: string) => void;
+}) {
+  const [filter, setFilter] = useState<"all" | "disponible">("all");
+  const [floorFilter, setFloorFilter] = useState<"all" | "Planta Baja" | "Planta Alta">("all");
+
+  const filtered = localSpaces.filter((l) => {
+    const matchStatus = filter === "all" || l.status === "disponible";
+    const matchFloor = floorFilter === "all" || l.floor === floorFilter;
+    return matchStatus && matchFloor;
+  });
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="bg-[#1C1410] text-white">
+        <div className="max-w-7xl mx-auto px-4 py-14">
+          <p className="text-[#E3A139] text-sm font-semibold uppercase tracking-widest mb-3">
+            Oportunidades Comerciales
+          </p>
+          <h1
+            className="text-4xl md:text-5xl mb-4"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Locales Disponibles
+          </h1>
+          <p className="text-white/70 text-lg max-w-2xl">
+            Encuentra el espacio ideal para tu negocio en uno de los centros comerciales más concurridos de la CDMX.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-wrap gap-3 mb-8">
+          {(["all", "disponible"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                filter === f
+                  ? "bg-[#C1440E] text-white border-[#C1440E]"
+                  : "bg-white text-[#3D2B22] border-[#E0D5CC] hover:border-[#C1440E]/50"
+              }`}
+            >
+              {f === "all" ? "Todos los Locales" : "Solo Disponibles"}
+            </button>
+          ))}
+          <select
+            value={floorFilter}
+            onChange={(e) => setFloorFilter(e.target.value as typeof floorFilter)}
+            className="px-4 py-2 rounded-xl border border-[#E0D5CC] text-sm text-[#3D2B22] bg-white focus:outline-none focus:border-[#C1440E]"
+          >
+            <option value="all">Todos los niveles</option>
+            <option value="Planta Baja">Planta Baja</option>
+            <option value="Planta Alta">Planta Alta</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((local) => (
+            <button
+              key={local.id}
+              onClick={() => onSelectLocal(local.id)}
+              className="text-left bg-white rounded-2xl overflow-hidden border border-[#E0D5CC] hover-lift group"
+            >
+              <div className="relative h-52 bg-[#E8DDD2] overflow-hidden">
+                <ImageWithFallback
+                  src={local.image}
+                  alt={`Local ${local.code}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3">
+                  <StatusBadge status={local.status} />
+                </div>
+                <div className="absolute top-3 right-3 bg-[#1C1410]/80 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Local {local.code}
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="font-bold text-[#1C1410] text-lg">{local.area} m²</p>
+                    <p className="text-[#8A7468] text-xs">{local.dimensions}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[#C1440E] font-bold text-sm">{local.price}</p>
+                    <p className="text-[#8A7468] text-xs">{local.floor}</p>
+                  </div>
+                </div>
+                <p className="text-[#8A7468] text-xs mb-3">📍 {local.zone}</p>
+                <div className="flex flex-wrap gap-1">
+                  {local.features.slice(0, 2).map((f) => (
+                    <span key={f} className="text-xs bg-[#F2ECE5] text-[#7A5C4E] px-2 py-0.5 rounded-full">
+                      {f}
+                    </span>
+                  ))}
+                  {local.features.length > 2 && (
+                    <span className="text-xs text-[#8A7468]">+{local.features.length - 2} más</span>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Local Detail ─────────────────────────────────────────────────────────────
+
+function LocalDetailPage({
+  local,
+  onBack,
+}: {
+  local: LocalSpace;
+  onBack: () => void;
+}) {
+  const [activeImage, setActiveImage] = useState(0);
+  const [formSent, setFormSent] = useState(false);
+  const [form, setForm] = useState({
+    nombre: "",
+    empresa: "",
+    telefono: "",
+    correo: "",
+    negocio: "",
+    mensaje: "",
+  });
+
+  const allImages = [local.image, ...local.gallery];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSent(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8]">
+      <div className="max-w-7xl mx-auto px-4 py-8">
